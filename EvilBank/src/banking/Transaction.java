@@ -7,6 +7,7 @@ public class Transaction implements Comparable <Transaction> {
 	private String transType;
 	private Date date;
 
+	
 	public Transaction(Double amount, String transType,Date date){
 		this.amount = amount;
 		this.transType = transType;
