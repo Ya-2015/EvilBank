@@ -1,7 +1,9 @@
 package banking;
 import java.text.NumberFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.HashMap;
 import java.util.Scanner;
 
 import org.omg.IOP.TransactionService;
@@ -15,14 +17,24 @@ public class EvilBankApp {
 	String newUser = " ";
 	
 	Scanner sc = new Scanner(System.in);
-		
+	
+	HashMap<String,Account> accountManager = new HashMap<String, Account>();
 		
 	
 	do{
 		
-	newAccount(sc);	
-	System.out.println("Would you like to switch accounts? y/n");
+	newAccount(sc,accountManager);
+	
+	System.out.println("Would you like to DELETE ACCOUNT? y/n ");
 	newUser = sc.next().toLowerCase();
+	if(newUser.equals("y")){
+		deleteAccount(sc,accountManager);
+	
+	System.out.println("Would you like to switch accounts or make another transaction with this account number? y/n ");
+	newUser = sc.next().toLowerCase();
+	
+	
+	}
 	
 	
 	}while(!newUser.equals("n"));
@@ -31,7 +43,7 @@ public class EvilBankApp {
 	
 	}
 	
-	public static void newAccount(Scanner sc)
+	public static void newAccount(Scanner sc,HashMap<String,Account> accountManager)
 	{
 	
 	
@@ -46,37 +58,48 @@ public class EvilBankApp {
 	
 	System.out.println("Welcome to Evil Corp Savings and Loan");
 	System.out.println("Please create the user account(s)");
-	System.out.println("Enter the Account Number or -1 to stop entering accounts : ");
-	acctNum = sc.nextLine();
+	acctNum = Validator.getString(sc,"Enter the Account Number or -1 to stop entering accounts : ");
+	
 	account.setAccountNum(acctNum);
 	
-	System.out.print("Enter the Name for the Account Number : ");
-	acctName = sc.next();
+
 	
-	System.out.print("Enter the balance for Account Number "+acctNum+": ");
-	acctBalance = sc.nextDouble();
-	account.setAccountBalance(acctBalance);
+	if(!accountManager.containsKey(account.getAccountNum())){
+		acctName = Validator.getString(sc,"Enter the Name for the Account Number : ");
+		
+		
+		acctBalance = Validator.getDouble(sc,"Enter the balance for Account Number "+acctNum+": ",0,999999999);
+		
+		account.setAccountBalance(acctBalance);
+		
+//		acctNum = Validator.getString(sc,"Enter an account Number or -1 to stop entering accounts : \n");
+		
+		accountManager.put(account.getAccountNum(),account);
+		
+		
+	}
+	else
+	{
+		account = accountManager.get(acctNum);
+	}
 	
-	System.out.print("Enter an account Number or -1 to stop entering accounts : \n");
-	acctNum = sc.next();
-	
+	String anotherTrans = "";
 	do{
 	
-	System.out.print("Enter a transaction type (Check(C), Debit Card(DB), Deposit(DP), or Withdrawal(W)): ");
-	transType = sc.next().toUpperCase();
+	transType = Validator.getStringType(sc,"Enter a transaction type (Check(C), Debit Card(DB), Deposit(DP), or Withdrawal(W)): ");
 	
 	
-	System.out.print("Enter the account Number: ");
-	acctNum = sc.next();
 	
-	System.out.print("Enter the amount for the transaction: ");
-	amount = sc.nextDouble();
-	System.out.print("Enter the date of the check: MM/DD/YYYY:");
-	dateStr = sc.next();
-	String[] parts = dateStr.split("/");
-	int month = Integer.parseInt(parts[0])-1;
-	int day = Integer.parseInt(parts[1]);
-	int year = Integer.parseInt(parts[2]);
+//	acctNum = Validator.getString(sc,"Enter the account Number: ");
+	
+	
+	amount = Validator.getDouble(sc,"Enter the amount for the transaction: ",0,999999999);
+	
+	int month = Validator.getInteger(sc,"Enter the month of the transaction (MM): ",1,12);
+	int day = Validator.getInteger(sc, "Please enter the day of transaction: (DD): ",1,31);
+	int year = Validator.getInteger(sc, "Enter the year of the transaction: (YYYY): ",1970,Calendar.getInstance().get(Calendar.YEAR));
+	
+	
 	
 	date = new GregorianCalendar(year,month,day).getTime();
 	
@@ -86,10 +109,10 @@ public class EvilBankApp {
 		
 	}
 	
-	System.out.print("Enter an account Number or -1 to stop entering accounts : \n");
-	acctNum = sc.next();
+	anotherTrans = Validator.getString(sc,"WOULD YOU LIKE TO MAKE ANOTHER TRANSACTION OR END TRANSACTIONS FOR THIS ACCOUNT? :  Y/N  \n").toLowerCase();
 	
-	}while(!acctNum.equals("-1"));
+	
+	}while(!anotherTrans.equals("n"));
 	account.processChecks();
 	
 	
@@ -97,14 +120,39 @@ public class EvilBankApp {
 	String actString = formatter.format(account.getAccountBalance());
 	
 	
-	System.out.print("THE BALLANCE OF ACCOUNT NUMBER "+account.getAccountNum()+" is: "+actString+"\n");
+	System.out.println("THE BALLANCE OF ACCOUNT NUMBER "+account.getAccountNum()+" is: "+actString+"\n");
 	for(Transaction t:account.getTransaction()){
 		String amtString = formatter.format(t.getAmount());
 		System.out.println("Transaction type selected: "+ t.getTransType()+"\n"+"Amount changed: " +amtString+"\n"+"Transaction date: " +t.getDate());
 	}
 	
+	
+	
+	
+	
 }
+	public static void deleteAccount(Scanner sc,HashMap<String,Account> accountManager){
 		
+		System.out.println("ENTER THE ACCOUNT NUMBER: ");
+		String acctNum = Validator.getString(sc,"Enter the Account Number or -1 to stop entering accounts : ");
+		
+		if(!accountManager.containsKey(acctNum)){
+			System.out.println("THIS ACCOUNT NUMBER DOES NOT EXIST!");
+			
+		}
+		else
+		{
+			if(accountManager.get(acctNum).getAccountBalance() == 0){
+				accountManager.remove(acctNum);
+				System.out.println(acctNum + " WAS DELETED.");
+				
+			}
+			else
+				System.out.println("CURRENT BALANCE: "+accountManager.get(acctNum).getAccountBalance());
+				System.out.println("OPERATION DENIED! BALANCE IS NOT $0.00");
+		}
+		
+	}		
 	
 
 }
