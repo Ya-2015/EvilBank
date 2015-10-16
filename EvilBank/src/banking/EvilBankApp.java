@@ -148,8 +148,8 @@ public class EvilBankApp {
 				
 			}
 			else
-				System.out.println("CURRENT BALANCE: "+accountManager.get(acctNum).getAccountBalance());
-				System.out.println("OPERATION DENIED! BALANCE IS NOT $0.00");
+				System.out.println("CURRENT BALANCE: "+accountManager.get(acctNum).getAccountBalance()+"\n OPERATION DENIED! BALANCE IS NOT $0.00");
+				
 		}
 		
 	}		
